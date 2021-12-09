@@ -1,16 +1,22 @@
 package week2.weekdayass;
 
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.HttpClientBuilder;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 
 public class WorkWithImages {
-	public static void main(String[] args) {
+	public static void main(String[] args) throws ClientProtocolException, IOException {
 		
 
 		WebDriverManager.chromedriver().setup();
@@ -21,18 +27,22 @@ public class WorkWithImages {
 		driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);
 		driver.findElement(By.xpath("//img[@ src='../images/home.png']")).click();
 		driver.navigate().to("http://leafground.com/pages/Image.html");
-	    String brokenText = driver.findElement(By.xpath("//label[text()='Am I Broken Image?']")).getText();
-		System.out.println(brokenText);
-		if(brokenText.equals(driver.findElement(By.xpath("//label[text()='Am I Broken Image?']")).getText()))
-		{
-			System.out.println("Yes u are broken");
-			
-		}
-		else 
-		{
-			System.out.println("You are not Broken");
-		}
-		}
+		WebElement imgElement = driver.findElement(By.xpath("//label[text()='Am I Broken Image?']/following-sibling::img"));
 		
+		HttpClient client = HttpClientBuilder.create().build();
+		HttpGet request = new HttpGet(imgElement.getAttribute("src"));
+		HttpResponse response = client.execute(request);
+		// verifying response code he HttpStatus should be 200 if not,
+		// increment as invalid images count
+		if (response.getStatusLine().getStatusCode() == 404)
+		{
+			System.out.println("It is broken image");
+		}
+		else
+		{
+			System.out.println("It is not broken image");
+		}	
+	
+	}	
 	}	
 
